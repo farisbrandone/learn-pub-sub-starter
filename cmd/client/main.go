@@ -24,22 +24,29 @@ func main() {
  if err!=nil {
 	log.Fatalf("This is the problem: %v", err)
  }
-_,newQueue,err:= pubsub.DeclareAndBind(connectionRabbitMQ,routing.ExchangePerilDirect,queName,routing.PauseKey,1)
 
 
-
-if err!=nil {
-	log.Fatalf("This is the problem: %v", err)
-
- }
- fmt.Printf("Queue %v declared and bound!\n", newQueue.Name)
+ 
+//create gamestae
  value:=gamelogic.NewGameState(user)
+ fmt.Printf("NEWGAMESTATE inside main client %v\n",value)
+ //connect to or create Queue
+ err=pubsub.SubscribeJSON(connectionRabbitMQ, routing.ExchangePerilDirect,queName,routing.PauseKey,1,handlerPause(value))
+ if err!=nil {
+	 log.Fatalf("This is the problem: %v", err)
+  }
+ 
+
+ //infinite loop
 for{
+	
+	fmt.Println("enter the command value of client")
 	valueEnter:=gamelogic.GetInput()
 	
 	if len(valueEnter)==0{
 		continue
 	}
+	
 	switch valueEnter[0] {
 	case "spawn":
 		fmt.Println("the message spawn value is sending ...")
@@ -73,6 +80,7 @@ for{
 		fmt.Println("unknown command ....")
 }
 }	
+
 
 
 // wait for ctrl+c

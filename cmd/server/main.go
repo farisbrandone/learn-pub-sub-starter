@@ -10,37 +10,64 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 func main() {
-	
+	//Create connection witn server rabbitmq
 	connection:="amqp://guest:guest@localhost:5672/"
  connectionRabbitMQ,error:=amqp.Dial(connection)
   if (error!=nil){
 	log.Fatalf("could not connect to RabbitMQ: %v", error)
   }
+
+  //open and return channel open
   amqpCan,err:=connectionRabbitMQ.Channel()
   if (err!=nil){
 	log.Fatalf("could not connect to RabbitMQ: %v", err)
   }
+  //close connection afther the end return
   defer connectionRabbitMQ.Close()
+
+
   fmt.Println("Starting Peril server, the connection was successful...")
-  gamelogic.PrintServerHelp()
   
-// wait for ctrl+c
-val:=routing.PlayingState{
+// define value we send to the channel from this server
+  val:=routing.PlayingState{
 	IsPaused: true,
 }
-//pubsub.PublishJSON(amqpCan,routing.ExchangePerilDirect,routing.PauseKey,val)
-/*
-amqpCan=cannal de rabbitmq sur lequel on se connecte
-routing.EXch...=le exchange choisit dans rabbbitmq pour le transfert du messaga
-pauseKey=la cle utiliser pour definir vers quels file d'attentes sera ennvoyé le message
-val=valeur envoye or publish a rabbitmq pour transfert 
-*/
+
+ // print command server help
+  gamelogic.PrintServerHelp()
+  
+
+/****************************************************/
+
+
+//enter the user in the server same like the client
+//generate the queue name
+
+/*_, queue, err := pubsub.DeclareAndBind(
+	connectionRabbitMQ,
+		routing.ExchangePerilTopic,
+		routing.GameLogSlug,
+		routing.GameLogSlug+".*",
+		0,
+	)
+	if err != nil {
+		log.Fatalf("could not subscribe to pause: %v", err)
+	}
+	fmt.Printf("Queue %v declared and bound!\n", queue.Name)*/
+
+
+/****************************************************/
+
+//infinite loop permit continue value enter and process
+
 for{
+	//enter command value give by help
 	valueEnter:=gamelogic.GetInput()
 /**/
 	if len(valueEnter)==0{
 		continue
 	}
+	//publish the value on the queue or do another thing  depending the command you enter
 	switch valueEnter[0] {
 	case "pause":
 		fmt.Println("the message pause is sending ...")
@@ -58,13 +85,13 @@ for{
 		}
 	case"quit":
 		log.Println("your are exiting ...")
-		break
+		return
 	default:
 		fmt.Println("I don't understand the command...")
 		
 	
 }
-
+// wait for ctrl+c
 /*signalChan := make(chan os.Signal, 1)
 signal.Notify(signalChan, os.Interrupt)
 <-signalChan
