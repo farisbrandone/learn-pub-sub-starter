@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"fmt"
+	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -21,7 +22,9 @@ func DeclareAndBind(
 		return nil, amqp.Queue{}, fmt.Errorf("could not create channel: %v", err)
 	  }
 	  //durable queue type
+	  log.Printf("poupoute %d\n",simpleQueueType)
 	  if simpleQueueType==0{
+		log.Println("Banko Banko ohoho")
 		dur,auto,exclu=true,false,false
 		
 	 //transiant (transitoire queue type)
@@ -29,8 +32,9 @@ func DeclareAndBind(
 		dur,auto,exclu=false,true,true
 		
 	  }
-	  
-	  newQueue,err:=amqpChan.QueueDeclare(queueName,dur,auto, exclu,false,nil)
+	  ///now i pass amqp.Table inside QueueDeclare with x-dead-letter-exchange key 
+	  //who take comme value the name of the dead exchange define inside ui rabbitMQ
+	  newQueue,err:=amqpChan.QueueDeclare(queueName,dur,auto, exclu,false,amqp.Table{"x-dead-letter-exchange":"peril_dlx"})
 
 	 if (err!=nil){
 		return nil, amqp.Queue{}, fmt.Errorf("could not declare queue: %v", err)

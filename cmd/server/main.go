@@ -61,6 +61,10 @@ func main() {
 //infinite loop permit continue value enter and process
 
 for{
+	
+ if err!=nil {
+	log.Fatalf("This is the problem: %v", err)
+ }
 	//enter command value give by help
 	valueEnter:=gamelogic.GetInput()
 /**/
